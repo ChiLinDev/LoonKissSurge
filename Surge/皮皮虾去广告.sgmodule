@@ -1,5 +1,5 @@
 #!name=皮皮虾去广告
-#!desc=移除开屏广告、评论区广告、视频流广告，精简我的页面。已知问题，评论区无内容。
+#!desc=移除开屏广告、评论区广告、视频流广告，精简我的页面。
 #!author=可莉🅥[https://github.com/luestr/ProxyResource/blob/main/README.md]
 #!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/PiPiXia.png
 #!category=iKeLee
@@ -7,7 +7,7 @@
 #!tag=去广告
 #!loon_version=3.2.4(787)
 #!homepage=https://github.com/luestr/ProxyResource/blob/main/README.md
-#!date=2024-11-28 00:00:00
+#!date=2025-03-06 16:30:23
 
 [Rule]
 AND,((DOMAIN-KEYWORD,-ad-,extended-matching),(DOMAIN-SUFFIX,byteimg.com,extended-matching)),REJECT,pre-matching
@@ -60,16 +60,14 @@ DOMAIN-KEYWORD,video-cn.snssdk.com,REJECT,extended-matching,pre-matching
 DOMAIN-KEYWORD,asiad.byteactivity,REJECT,extended-matching,pre-matching
 
 [Map Local]
+# 广告下发
 ^https:\/\/api(5-lq)?\.pipix\.com\/api\/ad\/ data-type=text data="{}" status-code=200
 
+# 横幅
 ^https:\/\/api(5-lq)?\.pipix\.com\/bds\/banner\/ data-type=text data="{}" status-code=200
 
+# 关注 - 近期热门皮友
 ^https:\/\/api(5-lq)?\.pipix\.com\/bds\/feed\/follow_feed\/ data-type=text data="{}" status-code=200
-
-[Script]
-移除视频流广告 = type=http-response, pattern=^https:\/\/api(5-lq)?\.pipix\.com\/bds\/feed\/stream\/v2\/, script-path=https://kelee.one/Resource/Script/PiPiXia/PiPiXia_remove_ads.js, requires-body=true
-
-精简我的页面 = type=http-response, pattern=^https:\/\/api(5-lq)?\.pipix\.com\/bds\/user\/check_in\/, script-path=https://kelee.one/Resource/Script/PiPiXia/PiPiXia_remove_ads.js, requires-body=true
 
 [MITM]
 hostname = %APPEND% api.pipix.com, api5-lq.pipix.com
