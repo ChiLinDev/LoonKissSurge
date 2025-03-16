@@ -1,29 +1,52 @@
-name: 同步surge上游模块  # 工作流程名称
+name: 同步 Surge 上游模块
 
-on:  # 触发条件
+on:
   schedule:
     - cron: '0 6 * * *'  # 每天 UTC 0 点运行（北京时间 8 点）
   workflow_dispatch:     # 允许手动触发
 
-jobs:  # 定义任务
-  sync-upstream: sync-upstream  # 任务 ID（自定义）
-    runs-on: ubuntu-latest  # 运行环境
-    steps:  # 步骤列表
-      - name: Checkout code
-        uses: actions/checkout@v4  # 拉取当前仓库代码
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      # 步骤 1: 拉取当前仓库代码
+      - name: 检出代码
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # 拉取完整历史记录
+          fetch-depth: 0
 
-      - name: 添加上游仓库
+      # 步骤 2: 配置 Git 身份
+      - name: 设置 Git 用户
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      # 步骤 3: 添加原仓库为上游
+      - name: 关联上游仓库
         run: |
           git remote add upstream https://github.com/QingRex/LoonKissSurge.git
 
-      - name: 拉取上游更新
+      # 步骤 4: 合并上游更新（允许失败以处理冲突）
+      - name: 同步上游内容
         run: |
           git fetch upstream
           git checkout main
-          git merge upstream/main
+          git merge upstream/main || true  # 允许合并失败继续执行
 
-      - name: 推送更新到 fork
+      # 步骤 5: 自动解决冲突（仅在存在冲突时触发）
+      - name: 处理合并冲突
+        run: |
+          # 检测是否存在未解决的冲突
+          if [[ $(git diff --name-only --diff-filter=U) ]]; then
+            echo "检测到冲突，强制采用上游修改..."
+            git checkout --theirs .   # 使用上游版本覆盖冲突
+            git add -A               # 标记冲突已解决
+            git commit -m "自动解决冲突：优先使用上游修改"
+          else
+            echo "无冲突，跳过处理"
+          fi
+
+      # 步骤 6: 推送更新
+      - name: 推送至 Fork 仓库
         run: |
           git push origin main
