@@ -1,0 +1,29 @@
+name: 同步surge上游模块  # 工作流程名称
+
+on:  # 触发条件
+  schedule:
+    - cron: '0 6 * * *'  # 每天 UTC 0 点运行（北京时间 8 点）
+  workflow_dispatch:     # 允许手动触发
+
+jobs:  # 定义任务
+  sync-upstream:神经元同步  # 任务 ID（自定义）
+    runs-on: ubuntu-latest  # 运行环境
+    steps:  # 步骤列表
+      - name: Checkout code
+        uses: actions/checkout@v4  # 拉取当前仓库代码
+        with:
+          fetch-depth: 0  # 拉取完整历史记录
+
+      - name: 添加上游仓库
+        run: |
+          git remote add upstream https://github.com/QingRex/LoonKissSurge.git
+
+      - name: 拉取上游更新
+        run: |
+          git fetch upstream
+          git checkout main
+          git merge upstream/main
+
+      - name: 推送更新到 fork
+        run: |
+          git push origin main
